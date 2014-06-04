@@ -854,6 +854,8 @@ enum cpu_idle_type {
 #define SD_PREFER_SIBLING	0x1000	/* Prefer to place tasks in a sibling domain */
 #define SD_OVERLAP		0x2000	/* sched_domains of this level overlap */
 
+extern void sched_ttwu_pending(void);
+
 extern int __weak arch_sd_sibiling_asym_packing(void);
 
 struct sched_domain_attr {
@@ -963,6 +965,8 @@ bool cpus_share_cache(int this_cpu, int that_cpu);
 #else /* CONFIG_SMP */
 
 struct sched_domain_attr;
+
+static inline void sched_ttwu_pending(void) { }
 
 static inline void
 partition_sched_domains(int ndoms_new, cpumask_var_t doms_new[],

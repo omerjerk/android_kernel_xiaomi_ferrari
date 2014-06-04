@@ -104,6 +104,7 @@ static void cpu_idle_loop(void)
 			arch_cpu_idle_exit();
 		}
 		tick_nohz_idle_exit();
+		sched_ttwu_pending();
 		schedule_preempt_disabled();
 		if (cpu_is_offline(smp_processor_id()))
 			arch_cpu_idle_dead();
