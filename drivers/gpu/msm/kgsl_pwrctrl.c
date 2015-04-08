@@ -1670,6 +1670,7 @@ static int _wake(struct kgsl_device *device)
 		/* Enable state before turning on irq */
 		kgsl_pwrctrl_set_state(device, KGSL_STATE_ACTIVE);
 		kgsl_pwrctrl_irq(device, KGSL_PWRFLAGS_ON);
+		kgsl_pwrscale_wake(device);
 		mod_timer(&device->idle_timer, jiffies +
 				device->pwrctrl.interval_timeout);
 	case KGSL_STATE_ACTIVE:
