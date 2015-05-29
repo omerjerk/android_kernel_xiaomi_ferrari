@@ -29,6 +29,7 @@ static inline unsigned long __xchg(unsigned long x, volatile void *ptr, int size
 	switch (size) {
 	case 1:
 		asm volatile("//	__xchg1\n"
+		"	prfm	pstl1strm, %2\n"
 		"1:	ldxrb	%w0, %2\n"
 		"	stlxrb	%w1, %w3, %2\n"
 		"	cbnz	%w1, 1b\n"
@@ -38,6 +39,7 @@ static inline unsigned long __xchg(unsigned long x, volatile void *ptr, int size
 		break;
 	case 2:
 		asm volatile("//	__xchg2\n"
+		"	prfm	pstl1strm, %2\n"
 		"1:	ldxrh	%w0, %2\n"
 		"	stlxrh	%w1, %w3, %2\n"
 		"	cbnz	%w1, 1b\n"
@@ -47,6 +49,7 @@ static inline unsigned long __xchg(unsigned long x, volatile void *ptr, int size
 		break;
 	case 4:
 		asm volatile("//	__xchg4\n"
+		"	prfm	pstl1strm, %2\n"
 		"1:	ldxr	%w0, %2\n"
 		"	stlxr	%w1, %w3, %2\n"
 		"	cbnz	%w1, 1b\n"
@@ -56,6 +59,7 @@ static inline unsigned long __xchg(unsigned long x, volatile void *ptr, int size
 		break;
 	case 8:
 		asm volatile("//	__xchg8\n"
+		"	prfm	pstl1strm, %2\n"
 		"1:	ldxr	%0, %2\n"
 		"	stlxr	%w1, %3, %2\n"
 		"	cbnz	%w1, 1b\n"
