@@ -1740,7 +1740,6 @@ static int chg_term_handler(struct smb1360_chip *chip, u8 rt_stat)
 		pr_debug("cancelling rboost work\n");
 		cancel_delayed_work_sync(&chip->rboost_work);
 		chip->rboost_workarnd_active = false;
-		pm_relax(chip->dev);
 	}
 
 	return 0;
@@ -1755,6 +1754,8 @@ static void smb1360_rboost_work_fn(struct work_struct *work)
 	struct delayed_work *dwork = to_delayed_work(work);
 	struct smb1360_chip *chip = container_of(dwork, struct smb1360_chip,
 							rboost_work);
+
+	pm_stay_awake(chip->dev);
 
 	if (!chip->usb_present || !chip->in_taper) {
 		pr_debug("exiting work usb_present=%d in_taper=%d\n",
@@ -1785,6 +1786,7 @@ static void smb1360_rboost_work_fn(struct work_struct *work)
 
 reschedule:
 	schedule_delayed_work(&chip->rboost_work, RBOOST_DELAY);
+	pm_relax(chip->dev);
 }
 
 
@@ -1800,14 +1802,12 @@ static int chg_taper_handler(struct smb1360_chip *chip, u8 rt_stat)
 			pr_debug("schedule_rboost_work\n");
 			schedule_delayed_work(&chip->rboost_work, RBOOST_DELAY);
 			chip->rboost_workarnd_active = true;
-			pm_stay_awake(chip->dev);
 		}
 	} else {
 		if (chip->rboost_workarnd_active && !chip->usb_present) {
 			pr_debug("kill rboost work\n");
 			cancel_delayed_work_sync(&chip->rboost_work);
 			chip->rboost_workarnd_active = false;
-			pm_relax(chip->dev);
 		}
 	}
 
@@ -4663,6 +4663,9 @@ static int smb1360_suspend(struct device *dev)
 	if (rc < 0)
 		pr_err("Couldn't set irq3_cfg rc=%d\n", rc);
 
+	if (chip->rboost_workarnd_active)
+		cancel_delayed_work_sync(&chip->rboost_work);
+
 	cancel_delayed_work_sync(&chip->soc_work);
 	mutex_lock(&chip->irq_complete);
 	chip->resume_completed = false;
@@ -4710,6 +4713,9 @@ static int smb1360_resume(struct device *dev)
 
 	schedule_delayed_work(&chip->soc_work,
 			round_jiffies_relative(msecs_to_jiffies(SOC_WORK_MS)));
+
+	if (chip->rboost_workarnd_active)
+		schedule_delayed_work(&chip->rboost_work, RBOOST_DELAY);
 
 	power_supply_changed(&chip->batt_psy);
 	return 0;
