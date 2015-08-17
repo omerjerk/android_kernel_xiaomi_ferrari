@@ -1555,8 +1555,10 @@ static int st_sensor_hub_parse_dt(struct st_hub_data *hdata)
 		err = -EINVAL;
 		goto st_hub_free_wakeup_gpio;
 	}
-#endif /* CONFIG_IIO_ST_HUB_RESET_GPIO */
 	dev_info(hdata->dev, "gpio_wakeup=%d, gpio_reset=%d\n",hdata->gpio_wakeup, hdata->gpio_reset);
+#else
+	dev_info(hdata->dev, "gpio_wakeup=%d\n",hdata->gpio_wakeup);
+#endif /* CONFIG_IIO_ST_HUB_RESET_GPIO */
 	return err;
 
 #ifdef CONFIG_IIO_ST_HUB_RESET_GPIO
